@@ -2,10 +2,10 @@ package fr.desnoc.gestionnary.ui.panels;
 
 import fr.desnoc.gestionnary.Main;
 import fr.desnoc.gestionnary.managers.PanelManager;
-import fr.desnoc.gestionnary.objects.Clazz;
+import fr.desnoc.gestionnary.objects.Student;
 import fr.desnoc.gestionnary.ui.panel.Panel;
-import fr.desnoc.gestionnary.ui.panels.includes.ClassRect;
 import fr.desnoc.gestionnary.ui.panels.includes.LeftPanel;
+import fr.desnoc.gestionnary.ui.panels.includes.StudentRect;
 import javafx.geometry.HPos;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -19,7 +19,7 @@ import javafx.scene.layout.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClassPanel extends Panel {
+public class StudentPanel  extends Panel {
 
     private final LeftPanel leftPanel = new LeftPanel();
     private final GridPane topPanel = new GridPane();
@@ -65,35 +65,35 @@ public class ClassPanel extends Panel {
         alwaysElement(topPanel);
         alwaysElement(bottomPanel);
 
-        Button addClass = new Button("Ajouter une Classe");
-        addClass.setMinSize(200, 30);
-        addClass.setMaxSize(200, 30);
-        GridPane.setValignment(addClass, VPos.CENTER);
-        GridPane.setHalignment(addClass, HPos.CENTER);
-        GridPane.setVgrow(addClass, Priority.ALWAYS);
-        GridPane.setHgrow(addClass, Priority.ALWAYS);
-        addClass.setTranslateY(-45);
-        addClass.setOnAction(e -> panelManager.showAddClass());
+        Button addStudent = new Button("Ajouter un Eleve");
+        addStudent.setMinSize(200, 30);
+        addStudent.setMaxSize(200, 30);
+        GridPane.setValignment(addStudent, VPos.CENTER);
+        GridPane.setHalignment(addStudent, HPos.CENTER);
+        GridPane.setVgrow(addStudent, Priority.ALWAYS);
+        GridPane.setHgrow(addStudent, Priority.ALWAYS);
+        addStudent.setTranslateY(-45);
+        addStudent.setOnAction(e -> panelManager.showAddStudent());
 
 
-        Button modifyClass = new Button("Modifier une Classe");
-        modifyClass.setMinSize(200, 30);
-        modifyClass.setMaxSize(200, 30);
-        GridPane.setValignment(modifyClass, VPos.CENTER);
-        GridPane.setHalignment(modifyClass, HPos.CENTER);
-        GridPane.setVgrow(modifyClass, Priority.ALWAYS);
-        GridPane.setHgrow(modifyClass, Priority.ALWAYS);
-        modifyClass.setOnAction(e -> panelManager.showModifyClass());
+        Button modifyStudent = new Button("Modifier un Eleve");
+        modifyStudent.setMinSize(200, 30);
+        modifyStudent.setMaxSize(200, 30);
+        GridPane.setValignment(modifyStudent, VPos.CENTER);
+        GridPane.setHalignment(modifyStudent, HPos.CENTER);
+        GridPane.setVgrow(modifyStudent, Priority.ALWAYS);
+        GridPane.setHgrow(modifyStudent, Priority.ALWAYS);
+        modifyStudent.setOnAction(e -> panelManager.showModifyStudent());
 
-        Button removeClass = new Button("Retirer une Classe");
-        removeClass.setMinSize(200, 30);
-        removeClass.setMaxSize(200, 30);
-        GridPane.setValignment(removeClass, VPos.CENTER);
-        GridPane.setHalignment(removeClass, HPos.CENTER);
-        GridPane.setVgrow(removeClass, Priority.ALWAYS);
-        GridPane.setHgrow(removeClass, Priority.ALWAYS);
-        removeClass.setTranslateY(45);
-        removeClass.setOnAction(e -> panelManager.showRemoveClass());
+        Button removeStudent = new Button("Retirer un Eleve");
+        removeStudent.setMinSize(200, 30);
+        removeStudent.setMaxSize(200, 30);
+        GridPane.setValignment(removeStudent, VPos.CENTER);
+        GridPane.setHalignment(removeStudent, HPos.CENTER);
+        GridPane.setVgrow(removeStudent, Priority.ALWAYS);
+        GridPane.setHgrow(removeStudent, Priority.ALWAYS);
+        removeStudent.setTranslateY(45);
+        removeStudent.setOnAction(e -> panelManager.showRemoveStudent());
 
         Button empruntButton = new Button("Emprunter un livre");
         empruntButton.setMinSize(200, 30);
@@ -103,7 +103,7 @@ public class ClassPanel extends Panel {
         GridPane.setVgrow(empruntButton, Priority.ALWAYS);
         GridPane.setHgrow(empruntButton, Priority.ALWAYS);
         empruntButton.setTranslateX(-320);
-        empruntButton.setOnAction(e -> this.panelManager.showEmpruntBookClass());
+        empruntButton.setOnAction(e -> this.panelManager.showEmpruntBookStudent());
 
         Button returnBook = new Button("Retourner un livre");
         returnBook.setMinSize(200, 30);
@@ -113,9 +113,9 @@ public class ClassPanel extends Panel {
         GridPane.setVgrow(returnBook, Priority.ALWAYS);
         GridPane.setHgrow(returnBook, Priority.ALWAYS);
         returnBook.setTranslateX(320);
-        returnBook.setOnAction(e -> this.panelManager.showReturnBookClass());
+        returnBook.setOnAction(e -> this.panelManager.showReturnBookStudent());
 
-        bottomPanel.getChildren().addAll(separator, addClass, modifyClass, removeClass, empruntButton, returnBook);
+        bottomPanel.getChildren().addAll(separator, addStudent, modifyStudent, removeStudent, empruntButton, returnBook);
     }
 
     private void showCenterPanel(GridPane panel){
@@ -132,33 +132,33 @@ public class ClassPanel extends Panel {
         centerPane.setMaxWidth(1080);
         centerPane.setMinWidth(1080);
 
-        List<ClassRect> classList = new ArrayList<>();
-        int spaceX = 120;
+        List<StudentRect> studentRectArrayList = new ArrayList<>();
+        int spaceX = 70;
         int spaceY = 50;
         int t = 0;
         int j = 0;
-        int listSize = panelManager.getManager().getClasses().size();
+        int listSize = panelManager.getManager().getStudents().size();
         for(int i = 0; i < listSize; i++){
-            Clazz clazz = panelManager.getManager().getClasses().get(i);
-            ClassRect classRect = new ClassRect(clazz);
-            this.alwaysElement(classRect);
-            GridPane.setValignment(classRect, VPos.TOP);
-            classRect.setTranslateX(classRect.getWidth()*t + spaceX);
-            classRect.setTranslateY(classRect.getHeight()*j + spaceY);
-            classList.add(classRect);
-
-            spaceX += 120;
+            Student student = panelManager.getManager().getStudents().get(i);
+            StudentRect studentRect = new StudentRect(student);
+            this.alwaysElement(studentRect);
+            GridPane.setValignment(studentRect, VPos.TOP);
+            studentRect.setTranslateX(studentRect.getWidth()*t + spaceX);
+            studentRect.setTranslateY(studentRect.getHeight()*j + spaceY);
+            studentRectArrayList.add(studentRect);
+            //9782848101217
+            spaceX += 60;
             t++;
-            if(t == 2){
+            if(t == 3){
                 j++;
                 spaceY += 50;
                 t = 0;
-                spaceX = 120;
+                spaceX = 80;
             }
             if(listSize%2==0){
-                height = (int) (classRect.getHeight()*(listSize/2) + (60 * listSize/2));
+                height = (int) (studentRect.getHeight()*(listSize/3) + (60 * listSize/2));
             }else{
-                height = (int) (classRect.getHeight()*((listSize+1)/2) + (60 * (listSize+1)/2));
+                height = (int) (studentRect.getHeight()*((listSize+1)/3) + (60 * (listSize+1)/2));
             }
         }
 
@@ -169,7 +169,7 @@ public class ClassPanel extends Panel {
         vBox.setMaxWidth(1040);
         vBox.setAlignment(Pos.TOP_CENTER);
 
-        centerPane.getChildren().addAll(classList);
+        centerPane.getChildren().addAll(studentRectArrayList);
         scrollPane.setContent(vBox);
         panel.getChildren().add(scrollPane);
         vBox.getChildren().add(0, centerPane);

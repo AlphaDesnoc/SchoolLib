@@ -3,6 +3,7 @@ package fr.desnoc.gestionnary.managers;
 import com.google.gson.Gson;
 import fr.desnoc.gestionnary.Main;
 import fr.desnoc.gestionnary.objects.Clazz;
+import fr.desnoc.gestionnary.objects.Student;
 import fr.desnoc.gestionnary.objects.Teacher;
 import fr.desnoc.gestionnary.objects.Book;
 import fr.desnoc.gestionnary.objects.json.JsonBookModel;
@@ -26,9 +27,12 @@ public class Manager {
     private final FileManager fileManager;
     private Book[] bookList;
     private Clazz[] classesList;
+
+    private Student[] studentsList;
     private ArrayList<Book> books;
     private List<Clazz> classes;
     private final List<Teacher> teachers;
+    private List<Student> students;
     private final Gson gson;
 
     private PanelManager panelManager;
@@ -41,10 +45,12 @@ public class Manager {
         books = new ArrayList<>();
         classes = new ArrayList<>();
         teachers = new ArrayList<>();
+        students = new ArrayList<>();
         gson = Main.getGson();
         fileManager.getBooksFile();
         readBooks();
         readClasses();
+        readStudents();
         logger.addHandler(fileManager.getLoggerFile());
         logger.setUseParentHandlers(false);
     }
@@ -75,6 +81,14 @@ public class Manager {
         writer.close();
     }
 
+    public void saveStudents() throws IOException {
+        File file = fileManager.getStudentsFile().toFile();
+        Writer writer = new FileWriter(file, StandardCharsets.UTF_8, false);
+        gson.toJson(getStudents(), writer);
+        writer.flush();
+        panelManager.getManager().log("Enregistrement des eleves dans le fichier eleves.json");
+        writer.close();
+    }
     public void readBooks() throws IOException {
         String jsonString = Files.readString(fileManager.getBooksFile(), StandardCharsets.UTF_8);
 
@@ -101,14 +115,17 @@ public class Manager {
         }
     }
 
-    public Book getBook(String isbn){
-        AtomicReference<Book> booK = null;
-        getBooks().forEach(book -> {
-            if(book.getIsbn().equals(isbn)){
-                booK.set(book);
+    public void readStudents() throws IOException {
+        String jsonString = Files.readString(fileManager.getStudentsFile(), StandardCharsets.UTF_8);
+
+        if (jsonString != null && !jsonString.equalsIgnoreCase("")) {
+            this.studentsList = Main.getGson().fromJson(jsonString, Student[].class);
+            ArrayList<Student> aStudentList = new ArrayList<>();
+            for (Student student : this.studentsList) {
+                aStudentList.add(student);
             }
-        });
-        return booK.get();
+            setStudents(aStudentList);
+        }
     }
 
     public void setBooks(ArrayList<Book> books) {
@@ -116,6 +133,10 @@ public class Manager {
     }
 
     public void setClasses(ArrayList<Clazz> classes) { this.classes = classes; }
+
+    public void setStudents(List<Student> students) {
+        this.students = students;
+    }
 
     public ArrayList<Book> getBooks() {
         return books;
@@ -211,10 +232,7 @@ public class Manager {
 
     public void empruntBook(Clazz clazz, Book book, int nb) throws IOException {
         if(nb > book.getNumberOfBook()){
-            log("&");
-            /**
-             * TODO message d'erreur a afficher
-             */
+            getPanelManager().showError("Veuillez rentrer un nombre plus petit");
         }else {
             for(int i = 0; i < nb; i++){
                 clazz.addBook(book);
@@ -231,9 +249,7 @@ public class Manager {
 
     public void returnBook(Clazz clazz, Book book, int nb) throws IOException {
         if(nb > book.getEmpruntedBooks()){
-            /**
-             * TODO message d'erreur a afficher
-             */
+            getPanelManager().showError("Veuillez rentrer un nombre plus petit");
         }else {
             for(int i = 0; i < nb; i++){
                 clazz.removeBook(book);
@@ -244,6 +260,34 @@ public class Manager {
         }
         saveBooks();
         saveClasses();
+    }
+
+    public void empruntBook(Student student, Book book) throws IOException {
+        if(book.getNumberOfBook() < 1){
+            getPanelManager().showError("Ce livre n'est pas disponible");
+        }else {
+            student.addBook(book);
+            if(book.getNumberOfBook() == 1){
+                book.setAvailable(false);
+            }
+            book.setNumberOfBook(book.getNumberOfBook()-1);
+            book.addEmpruntedBook(1);
+        }
+        saveBooks();
+        saveStudents();
+    }
+
+    public void returnBook(Student student, Book book) throws IOException {
+        if(book.getEmpruntedBooks() < 1){
+            getPanelManager().showError("Ce livre n'est pas disponible");
+        }else {
+            student.removeBook();
+            book.setAvailable(true);
+            book.setNumberOfBook(book.getNumberOfBook() + 1);
+            book.addReturnBook(1);
+        }
+        saveBooks();
+        saveStudents();
     }
 
     public void log(String message){
@@ -286,6 +330,13 @@ public class Manager {
     public void removeTeacher(Teacher teacher){
         getTeachers().remove(teacher);
     }
+
+    public List<Student> getStudents() {
+        return students;
+    }
+
+    public void addStudent(Student student) { getStudents().add(student); }
+    public void removeStudent(Student student) { getStudents().remove(student); }
 
     public FileManager getFileManager() {
         return fileManager;

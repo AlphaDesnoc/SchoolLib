@@ -2,16 +2,21 @@ package fr.desnoc.gestionnary.managers;
 
 import fr.desnoc.gestionnary.objects.Book;
 import fr.desnoc.gestionnary.objects.Clazz;
+import fr.desnoc.gestionnary.objects.Student;
 import fr.desnoc.gestionnary.objects.Teacher;
 import fr.desnoc.gestionnary.ui.panel.IPanel;
 import fr.desnoc.gestionnary.ui.panels.ClassPanel;
 import fr.desnoc.gestionnary.ui.panels.HomePanel;
+import fr.desnoc.gestionnary.ui.panels.StudentPanel;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -51,6 +56,7 @@ public class PanelManager {
 
         Menu menuEditBooks = new Menu("Livres");
         Menu menuEditClass = new Menu("Classes");
+        Menu menuEditStudent = new Menu("Eleves");
 
         MenuItem itemSaveBook = new MenuItem("Sauvegarder les livres");
         MenuItem itemSaveClass = new MenuItem("Sauvegarder les classes");
@@ -61,12 +67,18 @@ public class PanelManager {
         MenuItem itemAddClass = new MenuItem("Ajouter une classe");
         MenuItem itemModClass = new MenuItem("Modifier une classe");
         MenuItem itemRemoveClass = new MenuItem("Retirer une classe");
+        MenuItem itemEmpruntBookClass = new MenuItem("Emprunter un livre");
+        MenuItem itemReturnBookClass = new MenuItem("Rendre un livre");
+
+        MenuItem itemAddStudent = new MenuItem("Ajouter un eleve");
+        MenuItem itemModStudent = new MenuItem("Modifier un eleve");
+        MenuItem itemRemoveStudent = new MenuItem("Retirer un eleve");
+        MenuItem itemEmpruntBookStudent = new MenuItem("Emprunter un livre");
+        MenuItem itemReturnBookStudent = new MenuItem("Rendre un livre");
 
         MenuItem itemRemoveBook = new MenuItem("Retirer un livre");
         MenuItem itemAddBook = new MenuItem("Ajouter un livre");
         MenuItem itemModBook = new MenuItem("Modifier un livre");
-        MenuItem itemEmpruntBook = new MenuItem("Emprunter un livre");
-        MenuItem itemReturnBook = new MenuItem("Rendre un livre");
 
         itemSaveBook.setOnAction(event -> {
             try {
@@ -106,17 +118,18 @@ public class PanelManager {
         itemAddBook.setOnAction(event -> showAddBook());
         itemRemoveBook.setOnAction(event -> showRemoveBook());
         itemModBook.setOnAction(event -> showModifyBook());
-        itemEmpruntBook.setOnAction(event -> showEmpruntBook());
-        itemReturnBook.setOnAction(event -> showReturnBook());
 
         itemAddClass.setOnAction(e -> showAddClass());
         itemRemoveClass.setOnAction(e -> showRemoveClass());
         itemModClass.setOnAction(e -> showModifyClass());
+        itemEmpruntBookClass.setOnAction(event -> showEmpruntBookClass());
+        itemReturnBookClass.setOnAction(event -> showReturnBookClass());
 
         menuFile.getItems().addAll(itemSaveBook, itemSaveClass, itemSaveAll, separatorMenuItem, itemExit);
-        menuEditBooks.getItems().addAll(itemAddBook, itemRemoveBook, itemModBook, itemEmpruntBook, itemReturnBook);
-        menuEditClass.getItems().addAll(itemAddClass, itemRemoveClass, itemModClass);
-        menuEdit.getItems().addAll(menuEditBooks, menuEditClass);
+        menuEditBooks.getItems().addAll(itemAddBook, itemRemoveBook, itemModBook);
+        menuEditClass.getItems().addAll(itemAddClass, itemRemoveClass, itemModClass, itemEmpruntBookClass, itemReturnBookClass);
+        menuEditStudent.getItems().addAll(itemAddStudent, itemRemoveStudent, itemModStudent, itemEmpruntBookStudent, itemReturnBookStudent);
+        menuEdit.getItems().addAll(menuEditBooks, menuEditClass, menuEditStudent);
         menuBar.getMenus().addAll(menuFile, menuEdit);
 
         layout.add(menuBar, 0, 0);
@@ -379,6 +392,224 @@ public class PanelManager {
         stage.setScene(new Scene(panel, 500,300));
         stage.show();
     }
+
+    public void showAddStudent(){
+        Stage stage = new Stage();
+        stage.setWidth(500);
+        stage.setHeight(400);
+        stage.setTitle("Ajouter un eleve");
+
+        GridPane panel = new GridPane();
+
+
+        TextField studentName = new TextField();
+        studentName.setPromptText("Entrez le nom de l'eleve");
+        studentName.setMinSize(350, 50);
+        studentName.setMaxSize(350, 50);
+        studentName.setFocusTraversable(false);
+        GridPane.setValignment(studentName, VPos.CENTER);
+        GridPane.setHalignment(studentName, HPos.CENTER);
+        GridPane.setVgrow(studentName, Priority.ALWAYS);
+        GridPane.setHgrow(studentName, Priority.ALWAYS);
+        studentName.setTranslateY(-70);
+
+        TextField classNumber = new TextField();
+        classNumber.setPromptText("Entrez le numéro de la classe");
+        classNumber.setMinSize(350, 50);
+        classNumber.setMaxSize(350, 50);
+        classNumber.setFocusTraversable(false);
+        GridPane.setValignment(classNumber, VPos.CENTER);
+        GridPane.setHalignment(classNumber, HPos.CENTER);
+        GridPane.setVgrow(classNumber, Priority.ALWAYS);
+        GridPane.setHgrow(classNumber, Priority.ALWAYS);
+
+        Button button = new Button("Valider");
+        button.setMinSize(100, 30);
+        button.setMaxSize(100, 30);
+        GridPane.setValignment(button, VPos.CENTER);
+        GridPane.setHalignment(button, HPos.CENTER);
+        GridPane.setVgrow(button, Priority.ALWAYS);
+        GridPane.setHgrow(button, Priority.ALWAYS);
+        button.setTranslateY(100);
+        button.setOnAction(e -> {
+            getManager().getStudents().add(new Student(studentName.getText(), Byte.parseByte(classNumber.getText())));
+            try {
+                getManager().saveStudents();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            showPanel(new StudentPanel());
+            stage.close();
+        });
+
+        panel.getChildren().addAll(studentName, classNumber, button);
+
+        stage.setScene(new Scene(panel, 500,300));
+        stage.show();
+    }
+
+    public void modifyStudent(String studentName){
+        Stage stage = new Stage();
+        stage.setWidth(500);
+        stage.setHeight(400);
+        stage.setTitle("Modifier un eleve");
+
+        GridPane panel = new GridPane();
+        Student student = null;
+
+        for(int i = 0; i < getManager().getStudents().size(); i++){
+            if(getManager().getStudents().get(i).getName().equals(studentName)){
+                student = getManager().getStudents().get(i);
+            }
+        }
+        final TextField studentNameField = new TextField();
+        studentNameField.setPromptText("Entrez le nom de l'eleve");
+        studentNameField.setText(student.getName());
+        studentNameField.setMinSize(350, 50);
+        studentNameField.setMaxSize(350, 50);
+        studentNameField.setFocusTraversable(false);
+        GridPane.setValignment(studentNameField, VPos.CENTER);
+        GridPane.setHalignment(studentNameField, HPos.CENTER);
+        GridPane.setVgrow(studentNameField, Priority.ALWAYS);
+        GridPane.setHgrow(studentNameField, Priority.ALWAYS);
+        studentNameField.setTranslateY(-70);
+
+        TextField classNumber = new TextField();
+        classNumber.setPromptText("Le numéro de la classe)");
+        classNumber.setText(String.valueOf(student.getClassNumber()));
+        classNumber.setMinSize(350, 50);
+        classNumber.setMaxSize(350, 50);
+        classNumber.setFocusTraversable(false);
+        GridPane.setValignment(classNumber, VPos.CENTER);
+        GridPane.setHalignment(classNumber, HPos.CENTER);
+        GridPane.setVgrow(classNumber, Priority.ALWAYS);
+        GridPane.setHgrow(classNumber, Priority.ALWAYS);
+
+        Button button = new Button("Valider");
+        button.setMinSize(100, 30);
+        button.setMaxSize(100, 30);
+        GridPane.setValignment(button, VPos.CENTER);
+        GridPane.setHalignment(button, HPos.CENTER);
+        GridPane.setVgrow(button, Priority.ALWAYS);
+        GridPane.setHgrow(button, Priority.ALWAYS);
+        button.setTranslateY(100);
+        Student finalStudent = student;
+        button.setOnAction(e -> {
+            finalStudent.setName(studentNameField.getText());
+            finalStudent.setClassNumber(Byte.parseByte(classNumber.getText()));
+            try {
+                getManager().saveStudents();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            showPanel(new StudentPanel());
+            stage.close();
+        });
+
+        panel.getChildren().addAll(studentNameField, classNumber, button);
+
+        stage.setScene(new Scene(panel, 500,300));
+        stage.show();
+    }
+
+    public void showModifyStudent(){
+        Stage stage = new Stage();
+        stage.setWidth(500);
+        stage.setHeight(300);
+        stage.setTitle("Modifier un eleve");
+
+        GridPane panel = new GridPane();
+
+
+        TextField studentName = new TextField();
+        studentName.setPromptText("Entrez le nom de l'eleve");
+        studentName.setMinSize(300, 50);
+        studentName.setMaxSize(300, 50);
+        studentName.setFocusTraversable(false);
+        GridPane.setValignment(studentName, VPos.CENTER);
+        GridPane.setHalignment(studentName, HPos.CENTER);
+        GridPane.setVgrow(studentName, Priority.ALWAYS);
+        GridPane.setHgrow(studentName, Priority.ALWAYS);
+        studentName.setTranslateY(-50);
+
+        TextField classNumber = new TextField();
+        classNumber.setPromptText("Entrez le numéro de la classe");
+        classNumber.setMinSize(300, 50);
+        classNumber.setMaxSize(300, 50);
+        classNumber.setFocusTraversable(false);
+        GridPane.setValignment(classNumber, VPos.CENTER);
+        GridPane.setHalignment(classNumber, HPos.CENTER);
+        GridPane.setVgrow(classNumber, Priority.ALWAYS);
+        GridPane.setHgrow(classNumber, Priority.ALWAYS);
+        classNumber.setTranslateY(50);
+
+        Button button = new Button("Valider");
+        button.setMinSize(100, 30);
+        button.setMaxSize(100, 30);
+        GridPane.setValignment(button, VPos.CENTER);
+        GridPane.setHalignment(button, HPos.CENTER);
+        GridPane.setVgrow(button, Priority.ALWAYS);
+        GridPane.setHgrow(button, Priority.ALWAYS);
+        button.setTranslateY(150);
+        button.setOnAction(e -> {
+            modifyStudent(studentName.getText());
+            stage.close();
+        });
+
+        panel.getChildren().addAll(classNumber, button);
+
+        stage.setScene(new Scene(panel, 500,300));
+        stage.show();
+    }
+
+    public void showRemoveStudent(){
+        Stage stage = new Stage();
+        stage.setWidth(500);
+        stage.setHeight(300);
+        stage.setTitle("Retirer un eleve");
+
+        GridPane panel = new GridPane();
+
+
+        TextField studentName = new TextField();
+        studentName.setPromptText("Entrez le nom de l'eleve");
+        studentName.setMinSize(300, 50);
+        studentName.setMaxSize(300, 50);
+        studentName.setFocusTraversable(false);
+        GridPane.setValignment(studentName, VPos.CENTER);
+        GridPane.setHalignment(studentName, HPos.CENTER);
+        GridPane.setVgrow(studentName, Priority.ALWAYS);
+        GridPane.setHgrow(studentName, Priority.ALWAYS);
+        studentName.setTranslateY(-50);
+
+        Button button = new Button("Valider");
+        button.setMinSize(100, 30);
+        button.setMaxSize(100, 30);
+        GridPane.setValignment(button, VPos.CENTER);
+        GridPane.setHalignment(button, HPos.CENTER);
+        GridPane.setVgrow(button, Priority.ALWAYS);
+        GridPane.setHgrow(button, Priority.ALWAYS);
+        button.setTranslateY(50);
+        button.setOnAction(e -> {
+            for(int i = 0; i < getManager().getStudents().size(); i++){
+                if(getManager().getStudents().get(i).getName().equals(studentName.getText())){
+                    manager.removeStudent(getManager().getStudents().get(i));
+                }
+            }
+            try {
+                getManager().saveStudents();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            showPanel(new StudentPanel());
+            stage.close();
+        });
+
+        panel.getChildren().addAll(studentName, button);
+
+        stage.setScene(new Scene(panel, 500,300));
+        stage.show();
+    }
     public void showAddBook(){
         Stage stage = new Stage();
         stage.setWidth(500);
@@ -629,7 +860,145 @@ public class PanelManager {
         nStage.show();
     }
 
-    public void showEmpruntBook(){
+    public void showEmpruntBookStudent(){
+        Stage stage = new Stage();
+        stage.setWidth(500);
+        stage.setHeight(400);
+        stage.setTitle("Emprunter un livre");
+
+        GridPane panel = new GridPane();
+
+        TextField studentName = new TextField();
+        studentName.setPromptText("Entrez le nom de l'eleve");
+        studentName.setMinSize(350, 50);
+        studentName.setMaxSize(350, 50);
+        studentName.setFocusTraversable(false);
+        GridPane.setValignment(studentName, VPos.CENTER);
+        GridPane.setHalignment(studentName, HPos.CENTER);
+        GridPane.setVgrow(studentName, Priority.ALWAYS);
+        GridPane.setHgrow(studentName, Priority.ALWAYS);
+        studentName.setTranslateY(-120);
+
+        TextField isbnCode = new TextField();
+        isbnCode.setPromptText("Entrez le code ISBN du livre");
+        isbnCode.setMinSize(350, 50);
+        isbnCode.setMaxSize(350, 50);
+        isbnCode.setFocusTraversable(false);
+        GridPane.setValignment(isbnCode, VPos.CENTER);
+        GridPane.setHalignment(isbnCode, HPos.CENTER);
+        GridPane.setVgrow(isbnCode, Priority.ALWAYS);
+        GridPane.setHgrow(isbnCode, Priority.ALWAYS);
+        isbnCode.setTranslateY(-50);
+
+        Button button = new Button("Valider");
+        button.setMinSize(100, 30);
+        button.setMaxSize(100, 30);
+        GridPane.setValignment(button, VPos.CENTER);
+        GridPane.setHalignment(button, HPos.CENTER);
+        GridPane.setVgrow(button, Priority.ALWAYS);
+        GridPane.setHgrow(button, Priority.ALWAYS);
+        button.setTranslateY(100);
+        button.setOnAction(e -> {
+            Student studentValid = null;
+            Book bookValid = null;
+            for(Student student : manager.getStudents()){
+                if(student.getName().equals(studentName.getText())){
+                    studentValid = student;
+                    System.out.println(studentValid.getName());
+                }
+            }
+            for (Book book : manager.getBooks()){
+                if(book.getIsbn().equals(isbnCode.getText())){
+                    bookValid = book;
+                }
+            }
+            try {
+                if(studentValid != null && bookValid != null){
+                    getManager().empruntBook(studentValid, bookValid);
+                }
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            showPanel(new StudentPanel());
+            stage.close();
+        });
+
+        panel.getChildren().addAll(studentName, isbnCode, button);
+
+        stage.setScene(new Scene(panel, 500,300));
+        stage.show();
+    }
+
+    public void showReturnBookStudent(){
+        Stage stage = new Stage();
+        stage.setWidth(500);
+        stage.setHeight(400);
+        stage.setTitle("Rendre un livre");
+
+        GridPane panel = new GridPane();
+
+
+        TextField studentName = new TextField();
+        studentName.setPromptText("Entrez le nom de l'eleve");
+        studentName.setMinSize(350, 50);
+        studentName.setMaxSize(350, 50);
+        studentName.setFocusTraversable(false);
+        GridPane.setValignment(studentName, VPos.CENTER);
+        GridPane.setHalignment(studentName, HPos.CENTER);
+        GridPane.setVgrow(studentName, Priority.ALWAYS);
+        GridPane.setHgrow(studentName, Priority.ALWAYS);
+        studentName.setTranslateY(-120);
+
+        TextField isbnCode = new TextField();
+        isbnCode.setPromptText("Entrez le code ISBN du livre");
+        isbnCode.setMinSize(350, 50);
+        isbnCode.setMaxSize(350, 50);
+        isbnCode.setFocusTraversable(false);
+        GridPane.setValignment(isbnCode, VPos.CENTER);
+        GridPane.setHalignment(isbnCode, HPos.CENTER);
+        GridPane.setVgrow(isbnCode, Priority.ALWAYS);
+        GridPane.setHgrow(isbnCode, Priority.ALWAYS);
+        isbnCode.setTranslateY(-50);
+
+        Button button = new Button("Valider");
+        button.setMinSize(100, 30);
+        button.setMaxSize(100, 30);
+        GridPane.setValignment(button, VPos.CENTER);
+        GridPane.setHalignment(button, HPos.CENTER);
+        GridPane.setVgrow(button, Priority.ALWAYS);
+        GridPane.setHgrow(button, Priority.ALWAYS);
+        button.setTranslateY(120);
+        button.setOnAction(e -> {
+            Student studentValid = null;
+            Book bookValid = null;
+            for(Student student : manager.getStudents()){
+                if(student.getName().equals(studentName.getText())){
+                    studentValid = student;
+                }
+            }
+            for (Book book : manager.getBooks()){
+                if(book.getIsbn().equals(isbnCode.getText())){
+                    bookValid = book;
+                }
+            }
+            try {
+                if(studentValid != null && bookValid != null){
+                    getManager().returnBook(studentValid, bookValid);
+                }
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            showPanel(new StudentPanel());
+            stage.close();
+        });
+
+        panel.getChildren().addAll(studentName, isbnCode, button);
+
+        stage.setScene(new Scene(panel, 500,300));
+        stage.show();
+    }
+
+    public void showEmpruntBookClass(){
         Stage stage = new Stage();
         stage.setWidth(500);
         stage.setHeight(400);
@@ -709,7 +1078,9 @@ public class PanelManager {
         stage.show();
     }
 
-    public void showReturnBook(){
+
+
+    public void showReturnBookClass(){
         Stage stage = new Stage();
         stage.setWidth(500);
         stage.setHeight(400);
@@ -786,6 +1157,27 @@ public class PanelManager {
         panel.getChildren().addAll(numberText, isbnCode, bookNumber, button);
 
         stage.setScene(new Scene(panel, 500,300));
+        stage.show();
+    }
+
+    public void showError(String error){
+
+        Stage stage = new Stage();
+        stage.setWidth(500);
+        stage.setHeight(200);
+        stage.setTitle("Erreur");
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        GridPane panel = new GridPane();
+
+        Label dateLabel = new Label(error);
+        dateLabel.setFont(Font.font(dateLabel.getFont().getName(), 16));
+        dateLabel.setTextFill(Color.WHITE);
+        GridPane.setValignment(dateLabel, VPos.TOP);
+        GridPane.setHalignment(dateLabel, HPos.CENTER);
+
+        panel.getChildren().add(panel);
+        stage.setScene(new Scene(panel, 500,100));
         stage.show();
     }
 

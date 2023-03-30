@@ -1,5 +1,6 @@
 package fr.desnoc.gestionnary.managers;
 
+import fr.desnoc.gestionnary.Main;
 import javafx.scene.image.ImageView;
 
 import java.io.File;
@@ -43,49 +44,42 @@ public class FileManager {
     }
 
     public Path getBooksFile() throws IOException {
-
         Path path = Paths.get(getDir() + File.separator + "books.json");
-
         if(!Files.isDirectory(path)){
             if(!Files.exists(path)){
                 Files.createFile(path);
             }
         }
-
         return path;
     }
 
     public Path getClassesFile() throws IOException {
-
         Path path = Paths.get(getDir() + File.separator + "classes.json");
-
         if(!Files.isDirectory(path)){
             if(!Files.exists(path)){
                 Files.createFile(path);
             }
         }
+        return path;
+    }
 
+    public Path getStudentsFile() throws IOException {
+        Path path = Paths.get(getDir() + File.separator + "eleves.json");
+        if(!Files.isDirectory(path)){
+            if(!Files.exists(path)){
+                Files.createFile(path);
+            }
+        }
         return path;
     }
 
     public ImageView getImage(String imageName) throws IOException {
-        Path path = Paths.get(getImageDir() + File.separator + imageName+ ".png");
-        ImageView imageView = new ImageView(path.toString());
+        ImageView imageView = new ImageView(Main.class.getResource("/img/" + imageName +".png").toExternalForm());
         return imageView;
     }
 
     private Path getLoggerDir() throws IOException {
         Path path = Paths.get(getDir() + File.separator + "logs");
-
-        if(!Files.exists(path)){
-            Files.createDirectories(path);
-        }
-
-        return path;
-    }
-
-    private Path getImageDir() throws IOException {
-        Path path = Paths.get(getDir() + File.separator + "images");
 
         if(!Files.exists(path)){
             Files.createDirectories(path);

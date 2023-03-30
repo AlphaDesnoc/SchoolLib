@@ -1,14 +1,15 @@
 package fr.desnoc.gestionnary.ui.panels.includes;
 
+import fr.desnoc.gestionnary.Main;
 import fr.desnoc.gestionnary.objects.Book;
 import fr.desnoc.gestionnary.objects.Clazz;
-import fr.desnoc.gestionnary.objects.Teacher;
 import javafx.geometry.HPos;
+import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -42,8 +43,26 @@ public class ClassRect extends GridPane {
         this.setStyle("-fx-background-color: rgb(" + red + "," + green + "," + blue +");");
         top.setMaxWidth(400);
         top.setPrefWidth(400);
-        top.setMaxHeight(60);
-        top.setPrefHeight(60);
+        top.setMaxHeight(50);
+        top.setPrefHeight(50);
+
+        GridPane bottom = new GridPane();
+        alwaysElement(bottom);
+        GridPane.setValignment(bottom, VPos.BOTTOM);
+        this.setStyle("-fx-background-color: rgb(" + red + "," + green + "," + blue +");");
+        bottom.setMaxWidth(400);
+        bottom.setPrefWidth(400);
+        bottom.setMaxHeight(140);
+        bottom.setPrefHeight(140);
+
+        RowConstraints rowConstraints = new RowConstraints();
+        rowConstraints.setValignment(VPos.BOTTOM);
+        rowConstraints.setMinHeight(40);
+        rowConstraints.setMaxHeight(40);
+        rowConstraints.setVgrow(Priority.ALWAYS);
+        this.getRowConstraints().addAll(rowConstraints, new RowConstraints());
+        this.add(top, 0, 0);
+        this.add(bottom, 0, 1);
 
         Label classLabel = new Label("Classe : " + clazz.getClassNumber());
         this.alwaysElement(classLabel);
@@ -80,9 +99,27 @@ public class ClassRect extends GridPane {
         GridPane.setHalignment(bookLabel, HPos.CENTER);
         bookLabel.setTranslateY(70);
 
+        showBookList(bottom, clazz);
+
+        top.getChildren().addAll(classLabel, teacherName, bookLabel);
+    }
+
+    public void showBookList(GridPane panel, Clazz clazz){
+        ScrollPane scrollPane = new ScrollPane();
+        this.alwaysElement(scrollPane);
+        scrollPane.getStylesheets().add(Main.class.getResource("/css/scrollbar.css").toExternalForm());
+
+        int height = 50;
+
+        GridPane centerPane = new GridPane();
+        alwaysElement(centerPane);
+        GridPane.setValignment(centerPane, VPos.BOTTOM);
+        centerPane.setMaxWidth(400);
+        centerPane.setMinWidth(400);
+
         List<Label> bookList = new ArrayList<>();
         int spaceX = 20;
-        int spaceY = 80;
+        int spaceY = 10;
         int t = 0;
         int j = 0;
         int listSize = clazz.getEmpruntedBooks().size();
@@ -97,20 +134,31 @@ public class ClassRect extends GridPane {
             bookName.setTranslateY(spaceY);
             bookList.add(bookName);
 
-            spaceY += 35;
+            spaceY += 30;
             t++;
-            if(t == 4){
+            if(t == 8){
                 t = 0;
                 j++;
-                spaceY = 80;
-                spaceX += 120;
+                spaceY = 10;
+                spaceX += 170;
+            }
+            if(listSize <= 8){
+                height = 35 * listSize;
             }
             if(j == 2) break;
         }
 
-        top.getChildren().addAll(classLabel, teacherName, bookLabel);
-        top.getChildren().addAll(bookList);
-        this.getChildren().addAll(top);
+        VBox vBox = new VBox();
+        this.alwaysElement(vBox);
+        vBox.setMinHeight(height);
+        vBox.setMinWidth(380);
+        vBox.setMaxWidth(380);
+        vBox.setAlignment(Pos.TOP_CENTER);
+
+        centerPane.getChildren().addAll(bookList);
+        scrollPane.setContent(vBox);
+        panel.getChildren().add(scrollPane);
+        vBox.getChildren().add(0, centerPane);
     }
 
     private void alwaysElement(Node element) {

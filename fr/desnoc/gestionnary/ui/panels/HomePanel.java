@@ -256,7 +256,7 @@ public class HomePanel extends Panel {
                         GridPane.setHgrow(categoryB, Priority.ALWAYS);
 
                         TextField shelfB = new TextField();
-                        shelfB.setPromptText("Entrez la catégorie du livre");
+                        shelfB.setPromptText("Entrez l'étagère du livre");
                         shelfB.setMinSize(300, 50);
                         shelfB.setMaxSize(300, 50);
                         shelfB.setFocusTraversable(false);
